@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<meta charset=utf-8>
+<style>
+html {
+    font-family: sans-serif;
+}
+#frame {
+    border: 1px solid gray;
+    border-radius: 20px;
+    width: 960px;
+    height: 540px;
+    top: 50%;
+    left: 50%;
+    position: absolute;
+    margin-left: -480px;
+    margin-top: -270px;
+    overflow: hidden;
+}
+.date::first-line {
+    font-size: 12px;
+    line-height: 12px;
+}
+.date {
+    border-radius: 10px;
+    background-color: #88c;
+    color: white;
+    width: 180px;
+    height: 80px;
+    font-size: 36px;
+    text-align: center;
+    position: absolute;
+    top: 230px;
+    line-height: 36px;
+}
+#dayn2 { left: -90px; }
+#dayn1 { left: 150px; }
+#dayp1 { left: 630px; }
+#dayp2 { left: 870px; }
+#today {
+    left: 390px;
+    background-color: #008;
+}
+
+#even-trail, #odd-trail {
+    left: 0px;
+    width: 100%;
+    position: absolute;
+    height: 200px;
+    font-size: 180px;
+    line-height: 200px;
+    text-align: center;
+}
+
+#even-trail {
+    top: 0px;
+    color: silver;
+}
+
+#odd-trail {
+    bottom: 0px;
+    color: silver;
+}
+.word {
+    position: absolute;
+    transform: scale(3, 1);
+}
+.f5button {
+    font-size: 0.9em;
+    color: black;
+}
+@keyframes christmas1 {
+    from { color: red; }
+    to { color: green; }
+}
+@keyframes christmas2 {
+    from { color: green; }
+    to { color: red; }
+}
+@keyframes buddha1 {
+    from { color: olive; }
+    to { color: #eeb; }
+}
+@keyframes buddha2 {
+    from { color: olive; }
+    to { color: #eeb; }
+}
+.christmas1, .christmas2, .buddha1, .buddha2 {
+    animation-iteration-count: infinite;
+    animation-direction: alternate;
+    animation-duration: 2s;
+}
+.christmas1 { color: red; animation-name: christmas1; }
+.christmas2 { color: green; animation-name: christmas2; }
+.buddha1 { color: olive; animation-name: buddha1; }
+.buddha2 { color: olive; animation-name: buddha2; }
+
+#b1, #b2, #b3, #b4 { position: absolute; }
+#b1, #b2 { top: 5px; }
+#b2, #b3 { left: 5px; }
+#b3, #b4 { bottom: 5px; }
+#b4, #b1 { right: 5px; }
+</style>
+
+<div id=frame>
+    <div id=even-trail></div>
+    <div id=odd-trail></div>
+
+    <div id=dayn2 class=date></div>
+    <div id=dayn1 class=date></div>
+    <div id=today class=date></div>
+    <div id=dayp1 class=date></div>
+    <div id=dayp2 class=date></div>
+</div>
+
+<input type=button value=F5 onclick="location.reload();" id=b1>
+<input type=button value=F5 onclick="location.reload();" id=b2>
+<input type=button value="回到今天" onclick="backToNow();" id=b3>
+<input type=button value=F5 onclick="location.reload();" id=b4>
+
+<script>
+var F5 = '<input type=button class=f5button onclick="location.reload();" value=F5>';
+
+var TEXT = ['真', '係', '講', '你', '都', '唔', '信', '，', '琴', '晚', '我',
+            '一', '直', '咁', '㩒', F5, '，', '㩒', '呀', '㩒', '係', '咁',
+            '㩒', '都', '唔', '出', '嘢', '，', '㩒', '吓', '㩒', '吓', '原',
+            '來', '爛', '鳩', '咗', '，', '我', '原', '本', '諗', '住', '即',
+            '時', '落', '街', '買', '，', '但', '係', '電', '腦', '店', '又',
+            'C', 'L', 'O', 'S', 'E', '晒', '，', '7', '-', '1', '1', '又', '得',
+            '返', '0', '.', '0', '3', '，', '喺', '呢', '個', '時', '候', '，',
+            '我', '拆', '開', '<span class=christmas1>聖</span>',
+            '<span class=christmas2>誕</span>', '老', '人', '送', '嘅', '禮',
+            '物', '，', '我', '一', '睇', '，', '屌', '你', '正', '呀', '喂',
+            '，', '原', '來', '係', 'K', 'E', 'Y', 'B', 'O', 'A', 'R', 'D',
+            '，', '仲', '要', '係', '有', '2', '個', F5, '制', '，', '點', '撚',
+            '知', '我', '㩒', '撚', '到', '<span class=buddha1>佛</span>',
+            '<span class=buddha2>誕</span>', '都', '仲', '未', '有', '嘢', '出',
+            '。'];
+
+var CHRISTMAS_INDEX = 84;
+var BUDDHA_INDEX = 131;
+
+/* This records number of days starting from April 30th of that year, so
+ * 1 = May 1st, 5 = May 5th, 20 = May 20th, etc. The array starts from
+ * year 1911 until 2100. We *guess* that the cycle repeats after 190 years,
+ * which for sure is wrong, but for our purpose is good enough.
+ */
+var BUDDHAS_BIRTHDAYS = [6, 24, 13, 2, 21, 9, 28, 17, 7, 25, 15, 4, 23, 11, 0,
+                         19, 8, 26, 16, 6, 24, 13, 2, 20, 10, 28, 17, 7, 26, 14,
+                         3, 22, 11, 0, 19, 8, 27, 16, 5, 24, 13, 1, 20, 10, 29,
+                         17, 7, 26, 15, 3, 22, 11, 1, 19, 8, 27, 16, 4, 23, 12,
+                         2, 20, 10, -1, 18, 6, 25, 14, 3, 21, 11, 1, 20, 8, 27,
+                         16, 5, 23, 12, 2, 21, 10, 28, 18, 7, 24, 14, 3, 22, 11,
+                         0, 19, 8, 26, 15, 5, 24, 12, 2, 21, 10, -2, 17, 6, 25,
+                         14, 3, 22, 12, 0, 19, 8, 26, 15, 5, 24, 13, 2, 20, 9,
+                         28, 16, 6, 25, 15, 3, 22, 11, 0, 18, 7, 26, 16, 5, 24,
+                         13, 2, 20, 9, 28, 17, 6, 25, 15, 4, 22, 11, 0, 19, 7,
+                         26, 16, 5, 23, 12, 1, 20, 9, -2, 17, 7, 25, 14, 3, 22,
+                         10, 0, 19, 8, 26, 16, 5, 24, 12, 1, 20, 10, -2, 17, 7,
+                         25, 13, 3, 21, 11, 0, 19, 8, 27, 16];
+
+var TODAY_CENTER = $('today').offsetLeft + $('today').offsetWidth / 2;
+var DAY_SEPARATION = $('today').offsetLeft - $('dayn1').offsetLeft;
+var MAX_POS = $('frame').clientWidth;
+
+function adjustDate(dateObj, days) {
+    var newDate = new Date(dateObj);
+    newDate.setDate(newDate.getDate() + days);
+    return newDate;
+}
+
+function daysDiff(a, b) {
+    return Math.round((a.getTime() - b.getTime()) / 86400000);
+}
+
+function $(id) {
+    return document.getElementById(id);
+}
+
+function formatDate(dateObj) {
+    return ((dateObj.getFullYear()) + '年<br>' +
+            (dateObj.getMonth() + 1) + '月' + dateObj.getDate() + '日');
+}
+
+function displayWords(today, year) {
+    var christmas = new Date(year, 11, 25);
+    var buddhaPre = new Date(year + 1, 3, 30);
+    var buddhaDay = BUDDHAS_BIRTHDAYS[(year+1 - 1911) % BUDDHAS_BIRTHDAYS.length];
+
+    var daysFromChristmas = daysDiff(christmas, today);
+    var daysFromBuddha = daysDiff(buddhaPre, today) + buddhaDay;
+
+    var pixelChristmas = TODAY_CENTER + DAY_SEPARATION * daysFromChristmas;
+    var pixelBuddha = TODAY_CENTER + DAY_SEPARATION * daysFromBuddha;
+
+    var width = (pixelBuddha - pixelChristmas) / (BUDDHA_INDEX - CHRISTMAS_INDEX);
+
+    var spans = [];
+
+    for (var i = 0, text; text = TEXT[i]; ++ i) {
+        var pixel = (width * (i - CHRISTMAS_INDEX)) + pixelChristmas;
+
+        if (pixel >= -width && pixel <= MAX_POS) {
+            spans.push('<div class=word style="left:');
+            spans.push(pixel);
+            spans.push('px;">');
+            spans.push(text);
+            spans.push('</div>');
+        }
+    }
+
+    if (spans.length) {
+        $(year % 2 ? 'odd-trail' : 'even-trail').innerHTML = spans.join('');
+    }
+}
+
+function main() {
+    var today = new Date();
+    if ('undefined' !== typeof(sessionStorage)) {
+        today = sessionStorage.tomorrow;
+        if (today) {
+            components = today.split(/,/);
+            today = new Date(components[0] || 0, +components[1] || 0, components[2] || 0);
+        } else {
+            today = new Date();
+        }
+        var tomorrow = adjustDate(today, 1);
+        var sessStr = tomorrow.getFullYear() + ',' + tomorrow.getMonth() + ',' + tomorrow.getDate();
+        sessionStorage.tomorrow = sessStr;
+    }
+
+    $('dayn2').innerHTML = formatDate(adjustDate(today, -2));
+    $('dayn1').innerHTML = formatDate(adjustDate(today, -1));
+    $('today').innerHTML = formatDate(today);
+    $('dayp1').innerHTML = formatDate(adjustDate(today, 1));
+    $('dayp2').innerHTML = formatDate(adjustDate(today, 2));
+
+    var currentYear = today.getFullYear();
+    for (var year = currentYear - 2; year <= currentYear + 2; ++ year) {
+        displayWords(today, year);
+    }
+}
+
+main();
+
+function backToNow() {
+    if ('undefined' !== typeof(sessionStorage)) {
+        delete sessionStorage.tomorrow;
+    }
+    location.reload();
+}
+
+</script>
+
