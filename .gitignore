@@ -1,3 +1,7 @@
 *.swp
 *.swo
 .DS_Store
+f5.html
+*.pyc
+*.pyo
+__pycache__
